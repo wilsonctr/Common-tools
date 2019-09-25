@@ -26,3 +26,30 @@ df['Design_names'] = design_name
 df['Ligand_energy'] = ligand_energy
 df['Ligand_hbond_energy'] = ligand_hbond_energy
 df = df.set_index('Design_names')
+
+def parse_totE_from_scored_pdbs(folder):
+    
+    df = pd.DataFrame()
+    energy_list = []
+    name_list = []
+    
+    def total_energy_in_scored_pdb(pdb_file):
+    
+        with open(pdb_file, 'r') as f:
+            pdb_file = f.read().split('\n')
+        line = [i for i in pdb_file if 'pose' in i]
+        total_energy = line[0].split()[-1]
+
+        return total_energy
+    
+    for pdb in os.listdir(folder):
+        if pdb[-4:] == '.pdb':
+            energy = total_energy_in_scored_pdb('%s/%s'%(folder, pdb))
+            name_list.append(pdb)
+            energy_list.append(float(energy))
+            
+    df['PDB_name'] = name_list
+    df['energy_list'] = energy_list
+    df = df.sort_values('energy_list')
+    
+    return df
